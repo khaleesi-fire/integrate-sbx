@@ -854,6 +854,16 @@ section {
     position: relative;
 }
 
+.recaptcha-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.recaptcha-group .g-recaptcha {
+    transform-origin: left top;
+}
+
 .form-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -1227,4 +1237,3 @@ section {
     font-size: 0.8125rem;
     margin-top: 0.5rem;
 }
-
