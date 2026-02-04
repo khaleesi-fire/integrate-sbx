@@ -203,11 +203,37 @@ function clearError(input) {
     if (existingError) existingError.remove();
 }
 
+function showRecaptchaError(container, message) {
+    if (!container) return;
+    const existingError = container.querySelector('.error-message');
+    if (existingError) existingError.remove();
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'error-message';
+    errorDiv.textContent = message;
+    container.appendChild(errorDiv);
+}
+
+function clearRecaptchaError(container) {
+    if (!container) return;
+    const existingError = container.querySelector('.error-message');
+    if (existingError) existingError.remove();
+}
+
 // ===== Contact Form Handling =====
 const contactForm = document.getElementById('contactForm');
 const formSuccess = document.getElementById('formSuccess');
 
 if (contactForm) {
+    const recaptchaGroup = contactForm.querySelector('.recaptcha-group');
+
+    window.onRecaptchaSuccess = () => {
+        clearRecaptchaError(recaptchaGroup);
+    };
+
+    window.onRecaptchaExpired = () => {
+        showRecaptchaError(recaptchaGroup, 'Please complete the reCAPTCHA again.');
+    };
+
     // Email validation on blur
     const emailInput = contactForm.querySelector('[name="email"]');
     if (emailInput) {
@@ -230,9 +256,15 @@ if (contactForm) {
         e.preventDefault();
         
         const email = contactForm.querySelector('[name="email"]').value;
+        const recaptchaResponse = window.grecaptcha ? window.grecaptcha.getResponse() : '';
         
         if (!isValidEmail(email)) {
             showError(contactForm.querySelector('[name="email"]'), 'Please enter a valid email address');
+            return;
+        }
+
+        if (window.grecaptcha && !recaptchaResponse) {
+            showRecaptchaError(recaptchaGroup, 'Please verify that you are not a robot.');
             return;
         }
         
@@ -242,6 +274,7 @@ if (contactForm) {
             company: contactForm.querySelector('[name="company"]').value,
             service: contactForm.querySelector('[name="service"]').value,
             message: contactForm.querySelector('[name="message"]').value,
+            recaptchaToken: recaptchaResponse || null,
             timestamp: new Date().toISOString()
         };
         
@@ -286,6 +319,9 @@ if (contactForm) {
 function resetForm() {
     if (contactForm && formSuccess) {
         contactForm.reset();
+        if (window.grecaptcha) {
+            window.grecaptcha.reset();
+        }
         contactForm.style.display = 'flex';
         formSuccess.style.display = 'none';
     }
@@ -369,4 +405,3 @@ if ('ontouchstart' in window) {
 }
 
 console.log('✨ ixpTechnology Modern UI loaded successfully');
-
